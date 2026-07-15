@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/prajwal9399/Hadiya.git'
+            }
+        }
+        stage('Build Image') {
+            steps {
+                dir('hadiya_products_frontend') {
+                    sh 'docker build -t hadiya-frontend:latest .'
+                }
+            }
+        }
+        stage('Stop Old Container') {
+            steps {
+                sh 'docker rm -f hadiya-frontend-container || true'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker run -d \
+                      --name hadiya-frontend-container \
+                      -p 3001:4200 \
+                      hadiya-frontend:latest
+                '''
+            }
+        }
+        stage('Verify') {
+            steps {
+                sh 'sleep 8 && docker ps | grep hadiya-frontend-container'
+            }
+        }
+    }
+}
