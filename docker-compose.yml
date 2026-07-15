@@ -1,15 +1,19 @@
 version: '3.8'
-
 services:
   backend:
     build: ./hadiya_products_backend
     container_name: hadiya-backend-container
+    restart: unless-stopped
+    environment:
+      PORT: ${BACKEND_PORT}
+      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
     ports:
       - "3000:3000"
 
   frontend:
     build: ./hadiya_products_frontend
     container_name: hadiya-frontend-container
+    restart: unless-stopped
     ports:
       - "3001:4200"
     depends_on:

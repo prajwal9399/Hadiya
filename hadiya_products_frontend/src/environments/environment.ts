@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiGatewayURL: 'http://52.91.91.195:3000'
+  apiGatewayURL: 'http://13.201.82.232:3000'
 };
 
 /*
