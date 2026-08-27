@@ -1,6 +1,7 @@
-FROM node:18
+# Stage 1: Build Angular application
+FROM node:18 AS build
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY package*.json ./
 
@@ -8,6 +9,16 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 4200
+RUN npm run build -- --configuration production
 
-CMD ["npm", "start"]
+
+# Stage 2: Serve with Nginx
+FROM nginx:alpine
+
+COPY --from=build /app/dist/hadiya_products_admin /usr/share/nginx/html
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
