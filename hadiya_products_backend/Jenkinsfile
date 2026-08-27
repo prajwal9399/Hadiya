@@ -58,8 +58,13 @@ pipeline {
                       --query taskDefinition \
                       --output json > task-definition.json
 
-                    python3 - <<'PY'
+                    IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
+
+                    python3 - "$IMAGE_URI" <<'PY'
 import json
+import sys
+
+image_uri = sys.argv[1]
 
 with open("task-definition.json") as f:
     data = json.load(f)
@@ -72,10 +77,7 @@ data.pop("compatibilities", None)
 data.pop("registeredAt", None)
 data.pop("registeredBy", None)
 
-data["containerDefinitions"][0]["image"] = (
-    "812751451654.dkr.ecr.ap-south-1.amazonaws.com/"
-    "hadiya-backend:${BUILD_NUMBER}"
-)
+data["containerDefinitions"][0]["image"] = image_uri
 
 with open("task-definition-new.json", "w") as f:
     json.dump(data, f)
@@ -98,6 +100,8 @@ PY
                           --query 'taskDefinition.taskDefinitionArn' \
                           --output text
                     )
+
+                    echo "Deploying task definition: ${NEW_TASK_DEFINITION}"
 
                     /usr/local/bin/aws ecs update-service \
                       --cluster ${ECS_CLUSTER} \
